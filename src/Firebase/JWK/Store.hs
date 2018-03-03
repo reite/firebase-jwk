@@ -38,6 +38,8 @@ data KeyStore = KeyStore {
     keyStoreContent :: MVar (UTCTime, [JWK])
 }
 
+-- | Get the current keys and put them into the store.
+-- | This function expects the store to be empty.
 fillKeyStore :: KeyStore -> IO ()
 fillKeyStore ks = do
     response <- fmap googleKeysToJWKs <$> (asJSON =<< Session.get (keyStoreSession ks) firebaseKeysUrl)
@@ -52,13 +54,14 @@ fillKeyStore ks = do
 
         timeFormat = "%a, %d %b %_Y %T GMT"
 
-
+-- | Create a KeyStore. Will request the current keys before returning.
 createKeyStore :: IO KeyStore
 createKeyStore = do
     ks <- KeyStore <$> newAPISession <*> newEmptyMVar
     fillKeyStore ks
     return ks
 
+-- | Get the current keys. If they are expired get new ones, if not get from cache.
 keyStoreKeys :: KeyStore -> IO [JWK]
 keyStoreKeys ks = do
     (expires, keys) <- readMVar (keyStoreContent ks)
