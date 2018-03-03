@@ -1,5 +1,7 @@
 # firebase-jwk
 
+Fetch, parse and store JWKs from google Firebase in Haskell.
+
 To verify a JWT ID tokens from the firebase-auth api you need a key from google.
 This library allows converting keys in the PEM format that google provider to JWK.
 It also provides a way to cache keys for long running processes.

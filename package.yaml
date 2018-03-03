@@ -8,7 +8,7 @@ maintainer:          csreite@gmail.com
 extra-source-files:
 - README.md
 
-synopsis:            Keys for 
+synopsis:            Fetch, parse and store JWKs from google Firebase.
 category:            Web
 description:         Please see the README on Github at <https://github.com/reite/firebase-jwk#readme>
 
