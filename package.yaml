@@ -1,0 +1,44 @@
+name:                firebase-jwk
+version:             0.1.0.0
+github:              reite/firebase-jwk
+license:             BSD3
+author:              Christian Reite
+maintainer:          csreite@gmail.com
+
+extra-source-files:
+- README.md
+
+synopsis:            Keys for 
+category:            Web
+description:         Please see the README on Github at <https://github.com/reite/firebase-jwk#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- x509
+- x509-store
+- cryptonite
+- jose
+- text
+- lens
+- bytestring
+- aeson
+- unordered-containers
+- wreq
+- time
+
+library:
+  source-dirs: src
+
+tests:
+  firebase-jwk-test:
+    main:                Driver.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - firebase-jwk
+    - tasty
+    - tasty-discover
+    - tasty-hunit
