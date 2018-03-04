@@ -3,7 +3,8 @@
 module Firebase.JWK.Store (
     getCurrentKeys,
     createKeyStore,
-    keyStoreKeys
+    keyStoreKeys,
+    KeyStore
 ) where
 
 import Control.Concurrent.MVar
