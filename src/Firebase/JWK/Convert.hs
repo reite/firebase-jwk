@@ -15,26 +15,27 @@ import Data.X509
 
 import Firebase.JWK.Types
 
-
+-- Intermediate steps for converting from a Certificate to a list of JWK's
 
 pubKeyToParams ::  PublicKey -> RSAKeyParameters
 pubKeyToParams (PublicKey s n e) = RSAKeyParameters (Types.SizedBase64Integer s n) (Types.Base64Integer e) Nothing
+
 
 certificateToKeyParams :: Certificate -> RSAKeyParameters
 certificateToKeyParams = pubKeyToParams . toPubKey . certPubKey
     where
         toPubKey (PubKeyRSA  pb) = pb
 
+
 paramsToJWK :: RSAKeyParameters -> JWK
 paramsToJWK = fromKeyMaterial . RSAKeyMaterial 
-
 
 
 certificateToJWK :: Certificate -> JWK
 certificateToJWK = paramsToJWK . certificateToKeyParams
 
 
--- |Convert a set of google keys to JWKs. 
+-- | Convert a set of google keys to JWKs. 
 googleKeysToJWKs :: GoogleKeys -> [JWK]
 googleKeysToJWKs = map convert . toList
     where
