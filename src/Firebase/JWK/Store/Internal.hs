@@ -31,7 +31,10 @@ firebaseKeysUrl = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken
 -- | the keys so that you do not have to make a new request every time.
 data KeyStore = KeyStore {
     keyStoreSession :: Session,
-    keyStoreContent :: MVar (Either SomeException (UTCTime, [JWK]))
+    keyStoreContent :: MVar (Either (UTCTime, SomeException) (UTCTime, [JWK])),
+    
+    -- | Number of retries allowed before we fail. Will try 1 + n times.
+    keyStoreRetries :: Int
 }
 
 
@@ -62,22 +65,32 @@ defaultKeyStoreLogic = KeyStoreLogic {
 
 fillKeyStoreLogic :: KeyStoreLogic -> KeyStore -> IO ()
 fillKeyStoreLogic (KeyStoreLogic requestKeys) ks = do
-    result <- try $ requestKeys (keyStoreSession ks)
+    result <- tryWithRetries (keyStoreRetries ks) 
     putMVar (keyStoreContent ks) result
+    where
+        tryWithRetries :: Int -> IO (Either (UTCTime, SomeException) (UTCTime, [JWK]))
+        tryWithRetries n = do
+            result <- try $ requestKeys (keyStoreSession ks)
+            case result of
+                Left er | n > 0     -> tryWithRetries (n - 1)
+                        | otherwise -> do
+                            now <- getCurrentTime
+                            return $ Left (now, er)
 
+                Right v -> return (Right v)
 
 -- | Create a KeyStore. Will request the current keys before returning.
 --   We also check that initial fetch was successful so that we can return 
 --   error early if something goes wrong.
 createKeyStoreLogic :: KeyStoreLogic -> IO KeyStore
 createKeyStoreLogic logic = do
-    ks <- KeyStore <$> newAPISession <*> newEmptyMVar
+    ks <- KeyStore <$> newAPISession <*> newEmptyMVar <*> pure 1
     fillKeyStoreLogic logic ks
 
     let mvar = keyStoreContent ks
     value <- takeMVar mvar
     case value of
-        Left e  -> throwIO e
+        Left (_, e)  -> throwIO e
         Right v -> do
             putMVar mvar value
             return ks
@@ -88,7 +101,7 @@ keyStoreKeysLogic :: KeyStoreLogic -> KeyStore -> IO [JWK]
 keyStoreKeysLogic logic ks = do
     currentValue <- readMVar (keyStoreContent ks)
     case currentValue of 
-        Left e -> throwIO e
+        Left (_, e) -> throwIO e
         Right (expires, keys) -> do
             now <- getCurrentTime
             if now > expires

@@ -7,6 +7,7 @@ import Control.Exception (try, SomeException)
 import Control.Concurrent.MVar
 import Data.Time (getCurrentTime, UTCTime)
 import System.Timeout
+import Data.IORef
 
 import Firebase.JWK.Store.Internal
 
@@ -26,6 +27,19 @@ keyStoreLogicValid :: UTCTime -> KeyStoreLogic
 keyStoreLogicValid expireTime = KeyStoreLogic {
     requestKeys = \_ -> return (expireTime, [])
 }
+
+keyStoreLogicValidSecondTime :: UTCTime -> IO KeyStoreLogic
+keyStoreLogicValidSecondTime expireTime = do
+    ref <- newIORef (1 :: Int)
+    return KeyStoreLogic {
+        requestKeys = \_ -> do
+            count <- readIORef ref
+            if count == 0 
+                then return (expireTime, [])
+                else do
+                    writeIORef ref (count - 1)  
+                    fail "Some error"
+    }
 
 assertKeyStoreNotEmpty :: KeyStore -> IO ()
 assertKeyStoreNotEmpty ks = do
@@ -81,5 +95,12 @@ test_keyStore  = testGroup "KeyStoreLogic"
                 Right _ -> assertFailure "Expected creating keystore to fail"
                 Left  _ -> return ()
 
+        return ()
+
+    , testCase "Retries: Will succeed when first call is invalid but second is valid" $ do
+        now <- getCurrentTime
+        logic <- keyStoreLogicValidSecondTime now
+
+        ks <- createKeyStoreLogic logic
         return ()
     ]
