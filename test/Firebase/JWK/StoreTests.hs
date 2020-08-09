@@ -61,7 +61,7 @@ test_keyStore  = testGroup "KeyStoreLogic"
     , testCase "Error on creating key store will cause error" $ do
         result <- trySomeError $ createKeyStoreLogic keyStoreLogicError
         case result of 
-            Right _ -> assertFailure "Expected creting keystore to fail"
+            Right _ -> assertFailure "Expected creating keystore to fail"
             Left  _ -> return ()
 
     
