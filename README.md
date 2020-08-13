@@ -14,7 +14,7 @@ Use the keystore if you need to get keys more often. The keystore will cache the
 main :: IO ()
 main = do
     keyStore <- createKeyStore
-    keys <- keyStoreKeys
+    keys <- keyStoreKeys keyStore
     print keys
 ```
 
