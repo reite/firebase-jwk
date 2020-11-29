@@ -18,7 +18,7 @@ import Firebase.JWK.Types
 -- Intermediate steps for converting from a Certificate to a list of JWK's
 
 pubKeyToParams ::  PublicKey -> RSAKeyParameters
-pubKeyToParams (PublicKey s n e) = RSAKeyParameters (Types.SizedBase64Integer s n) (Types.Base64Integer e) Nothing
+pubKeyToParams (PublicKey s n e) = RSAKeyParameters (Types.Base64Integer n) (Types.Base64Integer e) Nothing
 
 
 certificateToKeyParams :: Certificate -> RSAKeyParameters
