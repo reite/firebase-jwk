@@ -17,7 +17,7 @@ dependencies:
 - x509
 - x509-store
 - cryptonite
-- jose
+- jose >= 0.8.0.0
 - text
 - lens
 - bytestring
